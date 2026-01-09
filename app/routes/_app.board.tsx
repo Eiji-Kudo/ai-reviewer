@@ -16,25 +16,20 @@ export function meta() {
   ];
 }
 
-const columns: ReviewStatus[] = ["pending", "in_review", "changes_requested", "approved", "merged"];
+const columns: ReviewStatus[] = ["needs_review", "reviewing", "waiting_author", "done"];
 
 const columnConfig: Record<ReviewStatus, { color: string; dotColor: string; bgHover: string }> = {
-  pending: { color: "text-gray-600", dotColor: "bg-gray-400", bgHover: "hover:border-gray-300" },
-  in_review: { color: "text-blue-600", dotColor: "bg-blue-500", bgHover: "hover:border-blue-300" },
-  changes_requested: {
+  needs_review: { color: "text-red-600", dotColor: "bg-red-500", bgHover: "hover:border-red-300" },
+  reviewing: { color: "text-blue-600", dotColor: "bg-blue-500", bgHover: "hover:border-blue-300" },
+  waiting_author: {
     color: "text-amber-600",
     dotColor: "bg-amber-500",
     bgHover: "hover:border-amber-300",
   },
-  approved: {
+  done: {
     color: "text-emerald-600",
     dotColor: "bg-emerald-500",
     bgHover: "hover:border-emerald-300",
-  },
-  merged: {
-    color: "text-violet-600",
-    dotColor: "bg-violet-500",
-    bgHover: "hover:border-violet-300",
   },
 };
 

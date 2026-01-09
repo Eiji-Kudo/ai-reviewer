@@ -22,30 +22,25 @@ export function meta() {
 }
 
 const statusConfig = {
-  pending: {
-    bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-700 dark:text-gray-300",
-    dot: "bg-gray-400",
+  needs_review: {
+    bg: "bg-red-100 dark:bg-red-900/50",
+    text: "text-red-700 dark:text-red-300",
+    dot: "bg-red-500",
   },
-  in_review: {
+  reviewing: {
     bg: "bg-blue-100 dark:bg-blue-900/50",
     text: "text-blue-700 dark:text-blue-300",
     dot: "bg-blue-500",
   },
-  changes_requested: {
+  waiting_author: {
     bg: "bg-amber-100 dark:bg-amber-900/50",
     text: "text-amber-700 dark:text-amber-300",
     dot: "bg-amber-500",
   },
-  approved: {
+  done: {
     bg: "bg-emerald-100 dark:bg-emerald-900/50",
     text: "text-emerald-700 dark:text-emerald-300",
     dot: "bg-emerald-500",
-  },
-  merged: {
-    bg: "bg-violet-100 dark:bg-violet-900/50",
-    text: "text-violet-700 dark:text-violet-300",
-    dot: "bg-violet-500",
   },
 };
 

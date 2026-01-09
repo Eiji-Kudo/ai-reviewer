@@ -10,15 +10,14 @@ export function meta() {
 
 export default function Dashboard() {
   const stats = {
-    pending: mockReviews.filter((r) => r.status === "pending").length,
-    inReview: mockReviews.filter((r) => r.status === "in_review").length,
-    changesRequested: mockReviews.filter((r) => r.status === "changes_requested").length,
-    approved: mockReviews.filter((r) => r.status === "approved").length,
-    merged: mockReviews.filter((r) => r.status === "merged").length,
+    needsReview: mockReviews.filter((r) => r.status === "needs_review").length,
+    reviewing: mockReviews.filter((r) => r.status === "reviewing").length,
+    waitingAuthor: mockReviews.filter((r) => r.status === "waiting_author").length,
+    done: mockReviews.filter((r) => r.status === "done").length,
   };
 
   const totalReviews = mockReviews.length;
-  const activeReviews = stats.pending + stats.inReview + stats.changesRequested;
+  const activeReviews = stats.needsReview + stats.reviewing;
 
   const recentReviews = [...mockReviews]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -36,32 +35,32 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
-            label="Active Reviews"
-            value={activeReviews}
+            label="Needs Review"
+            value={stats.needsReview}
             icon={<ActiveIcon />}
-            color="blue"
-            trend={`${stats.pending} pending`}
+            color="red"
+            trend="Waiting for your review"
           />
           <StatCard
-            label="In Review"
-            value={stats.inReview}
+            label="Reviewing"
+            value={stats.reviewing}
             icon={<ReviewIcon />}
-            color="amber"
-            trend="Being reviewed"
+            color="blue"
+            trend="In progress"
           />
           <StatCard
-            label="Approved"
-            value={stats.approved}
+            label="Waiting for Author"
+            value={stats.waitingAuthor}
             icon={<ApprovedIcon />}
-            color="emerald"
-            trend="Ready to merge"
+            color="amber"
+            trend="Pending author changes"
           />
           <StatCard
-            label="Merged"
-            value={stats.merged}
+            label="Done"
+            value={stats.done}
             icon={<MergedIcon />}
-            color="violet"
-            trend="This week"
+            color="emerald"
+            trend="Completed"
           />
         </div>
 
@@ -107,34 +106,28 @@ export default function Dashboard() {
               </h2>
               <div className="space-y-4">
                 <StatusBar
-                  label="Pending"
-                  value={stats.pending}
+                  label="Needs Review"
+                  value={stats.needsReview}
                   total={totalReviews}
-                  color="gray"
+                  color="red"
                 />
                 <StatusBar
-                  label="In Review"
-                  value={stats.inReview}
+                  label="Reviewing"
+                  value={stats.reviewing}
                   total={totalReviews}
                   color="blue"
                 />
                 <StatusBar
-                  label="Changes Requested"
-                  value={stats.changesRequested}
+                  label="Waiting for Author"
+                  value={stats.waitingAuthor}
                   total={totalReviews}
                   color="amber"
                 />
                 <StatusBar
-                  label="Approved"
-                  value={stats.approved}
+                  label="Done"
+                  value={stats.done}
                   total={totalReviews}
                   color="emerald"
-                />
-                <StatusBar
-                  label="Merged"
-                  value={stats.merged}
-                  total={totalReviews}
-                  color="violet"
                 />
               </div>
             </div>
@@ -203,21 +196,15 @@ function StatCard({
   label: string;
   value: number;
   icon: React.ReactNode;
-  color: "blue" | "amber" | "emerald" | "violet";
+  color: "blue" | "amber" | "emerald" | "violet" | "red";
   trend: string;
 }) {
-  const _colors = {
-    blue: "from-blue-500 to-blue-600",
-    amber: "from-amber-500 to-orange-600",
-    emerald: "from-emerald-500 to-teal-600",
-    violet: "from-violet-500 to-purple-600",
-  };
-
   const bgColors = {
     blue: "bg-blue-50 dark:bg-blue-900/20",
     amber: "bg-amber-50 dark:bg-amber-900/20",
     emerald: "bg-emerald-50 dark:bg-emerald-900/20",
     violet: "bg-violet-50 dark:bg-violet-900/20",
+    red: "bg-red-50 dark:bg-red-900/20",
   };
 
   const iconColors = {
@@ -225,6 +212,7 @@ function StatCard({
     amber: "text-amber-600 dark:text-amber-400",
     emerald: "text-emerald-600 dark:text-emerald-400",
     violet: "text-violet-600 dark:text-violet-400",
+    red: "text-red-600 dark:text-red-400",
   };
 
   return (
@@ -245,11 +233,10 @@ function StatCard({
 
 function ReviewItem({ review, index }: { review: (typeof mockReviews)[0]; index: number }) {
   const statusDotClass = {
-    pending: "bg-gray-400",
-    in_review: "bg-blue-500 animate-pulse",
-    changes_requested: "bg-amber-500",
-    approved: "bg-emerald-500",
-    merged: "bg-violet-500",
+    needs_review: "bg-red-500",
+    reviewing: "bg-blue-500 animate-pulse",
+    waiting_author: "bg-amber-500",
+    done: "bg-emerald-500",
   };
 
   return (
@@ -307,15 +294,14 @@ function StatusBar({
   label: string;
   value: number;
   total: number;
-  color: "gray" | "blue" | "amber" | "emerald" | "violet";
+  color: "red" | "blue" | "amber" | "emerald";
 }) {
   const percentage = total > 0 ? (value / total) * 100 : 0;
   const barColors = {
-    gray: "bg-gray-400",
+    red: "bg-red-500",
     blue: "bg-blue-500",
     amber: "bg-amber-500",
     emerald: "bg-emerald-500",
-    violet: "bg-violet-500",
   };
 
   return (

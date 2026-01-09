@@ -153,8 +153,8 @@ body {
   @apply w-2 h-2 rounded-full;
 }
 
-.status-dot-pending { @apply bg-gray-400; }
-.status-dot-in-review { @apply bg-blue-500 animate-pulse-soft; }
-.status-dot-changes-requested { @apply bg-amber-500; }
-.status-dot-approved { @apply bg-emerald-500; }
-.status-dot-merged { @apply bg-violet-500; }
+.status-dot-needs-review { @apply bg-red-500; }
+.status-dot-reviewing { @apply bg-blue-500; animation: pulse-soft 2s ease-in-out infinite; }
+.status-dot-waiting-author { @apply bg-amber-500; }
+.status-dot-re-review { @apply bg-orange-500; }
+.status-dot-done { @apply bg-emerald-500; }

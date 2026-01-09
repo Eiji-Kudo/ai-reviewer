@@ -1,4 +1,8 @@
-export type ReviewStatus = "pending" | "in_review" | "changes_requested" | "approved" | "merged";
+export type ReviewStatus =
+  | "needs_review"
+  | "reviewing"
+  | "waiting_author"
+  | "done";
 
 export type Priority = "high" | "medium" | "low";
 
@@ -58,7 +62,7 @@ export const mockReviews: Review[] = [
     id: "1",
     title: "Add user authentication flow",
     description: "Implement login, logout, and session management",
-    status: "pending",
+    status: "needs_review",
     priority: "high",
     author: "alice",
     reviewers: ["bob", "charlie"],
@@ -72,7 +76,7 @@ export const mockReviews: Review[] = [
     id: "2",
     title: "Fix memory leak in dashboard",
     description: "useEffect cleanup was missing in chart component",
-    status: "in_review",
+    status: "reviewing",
     priority: "high",
     author: "bob",
     reviewers: ["alice"],
@@ -86,7 +90,7 @@ export const mockReviews: Review[] = [
     id: "3",
     title: "Update dependencies to latest versions",
     description: "Bump React, TypeScript and other core dependencies",
-    status: "in_review",
+    status: "reviewing",
     priority: "medium",
     author: "charlie",
     reviewers: ["alice", "bob"],
@@ -100,7 +104,7 @@ export const mockReviews: Review[] = [
     id: "4",
     title: "Refactor API client",
     description: "Extract common fetch logic into reusable hooks",
-    status: "changes_requested",
+    status: "waiting_author",
     priority: "medium",
     author: "alice",
     reviewers: ["charlie"],
@@ -114,7 +118,7 @@ export const mockReviews: Review[] = [
     id: "5",
     title: "Add dark mode support",
     description: "Implement theme switching with system preference detection",
-    status: "approved",
+    status: "needs_review",
     priority: "low",
     author: "bob",
     reviewers: ["alice"],
@@ -128,7 +132,7 @@ export const mockReviews: Review[] = [
     id: "6",
     title: "Fix typo in README",
     description: "Correct spelling mistakes in documentation",
-    status: "merged",
+    status: "done",
     priority: "low",
     author: "charlie",
     reviewers: ["bob"],
@@ -142,7 +146,7 @@ export const mockReviews: Review[] = [
     id: "7",
     title: "Implement search functionality",
     description: "Add full-text search for reviews and comments",
-    status: "pending",
+    status: "needs_review",
     priority: "medium",
     author: "alice",
     reviewers: [],
@@ -536,19 +540,17 @@ export type ReviewCommentDraft = {
 };
 
 export const statusLabels: Record<ReviewStatus, string> = {
-  pending: "Pending",
-  in_review: "In Review",
-  changes_requested: "Changes Requested",
-  approved: "Approved",
-  merged: "Merged",
+  needs_review: "Needs Review",
+  reviewing: "Reviewing",
+  waiting_author: "Waiting for Author",
+  done: "Done",
 };
 
 export const statusColors: Record<ReviewStatus, string> = {
-  pending: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  in_review: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  changes_requested: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  approved: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  merged: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
+  needs_review: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  reviewing: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  waiting_author: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
 };
 
 export const priorityColors: Record<Priority, string> = {
