@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(npx biome:*)",
+      "Bash(npm run typecheck:*)"
+    ]
+  }
+}
