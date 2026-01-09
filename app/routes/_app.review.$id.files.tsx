@@ -24,6 +24,21 @@ type ContextMenuState = {
 
 type Tone = "gentle" | "neutral" | "strict";
 
+function getDefaultExpandedFolders(nodes: FileTreeNode[], result: Set<string> = new Set()): Set<string> {
+  for (const node of nodes) {
+    if (node.type === "folder" && node.children) {
+      const hasChangedFile = node.children.some(
+        (child) => child.status || (child.type === "folder" && child.children)
+      );
+      if (hasChangedFile) {
+        result.add(node.path);
+        getDefaultExpandedFolders(node.children, result);
+      }
+    }
+  }
+  return result;
+}
+
 export default function ReviewFiles() {
   const { id } = useParams();
   const [selectedFile, setSelectedFile] = useState(mockFileChanges[0]);
@@ -38,6 +53,10 @@ export default function ReviewFiles() {
   const [showExplain, setShowExplain] = useState(false);
   const [activeCode, setActiveCode] = useState("");
   const [postedComments, setPostedComments] = useState<number[]>([]);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
+    () => getDefaultExpandedFolders(mockFileTree)
+  );
+  const [showChangedOnly, setShowChangedOnly] = useState(true);
 
   const fileComments = mockComments.filter(
     (c) => c.reviewId === id && c.filePath === selectedFile.path
@@ -80,42 +99,88 @@ export default function ReviewFiles() {
     setPostedComments((prev) => [...prev, lineNumber]);
   };
 
+  const toggleFolder = (path: string) => {
+    setExpandedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  };
+
+  const handleFileSelect = (node: FileTreeNode) => {
+    const fileChange = mockFileChanges.find((f) => f.path === node.path);
+    if (fileChange) {
+      setSelectedFile(fileChange);
+    }
+  };
+
   return (
     <div className="flex h-full">
-      <div className="w-64 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 overflow-y-auto shrink-0">
+      <div className="w-72 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 overflow-y-auto shrink-0 flex flex-col">
         <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Changed Files</h3>
-        </div>
-        <div className="p-2">
-          {mockFileChanges.map((file) => {
-            const hasSuggestions = file.path.includes("App.tsx");
-            return (
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Explorer</h3>
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                key={file.path}
-                onClick={() => setSelectedFile(file)}
-                className={`w-full text-left p-2 rounded-lg text-sm transition-colors ${
-                  selectedFile.path === file.path
-                    ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
+                onClick={() => setExpandedFolders(getDefaultExpandedFolders(mockFileTree))}
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                title="変更ファイルに折りたたむ"
               >
-                <div className="flex items-center gap-2">
-                  <FileStatusIcon status={file.status} />
-                  <span className="truncate font-mono text-xs">{file.path.split("/").pop()}</span>
-                  {hasSuggestions && (
-                    <span className="ml-auto px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 rounded">
-                      3
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mt-1 ml-6 text-xs">
-                  <span className="text-green-600 dark:text-green-400">+{file.additions}</span>
-                  <span className="text-red-600 dark:text-red-400">-{file.deletions}</span>
-                </div>
+                <CollapseIcon className="w-4 h-4" />
               </button>
-            );
-          })}
+              <button
+                type="button"
+                onClick={() => {
+                  const all = new Set<string>();
+                  const expandAll = (nodes: FileTreeNode[]) => {
+                    for (const n of nodes) {
+                      if (n.type === "folder") {
+                        all.add(n.path);
+                        if (n.children) expandAll(n.children);
+                      }
+                    }
+                  };
+                  expandAll(mockFileTree);
+                  setExpandedFolders(all);
+                }}
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                title="すべて展開"
+              >
+                <ExpandIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowChangedOnly(!showChangedOnly)}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                showChangedOnly
+                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              変更のみ
+            </button>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {mockFileChanges.length} files changed
+            </span>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto py-1">
+          <FileTree
+            nodes={mockFileTree}
+            expandedFolders={expandedFolders}
+            selectedPath={selectedFile.path}
+            showChangedOnly={showChangedOnly}
+            onToggle={toggleFolder}
+            onSelect={handleFileSelect}
+          />
         </div>
       </div>
 
@@ -563,5 +628,228 @@ function SendIcon({ className }: { className?: string }) {
         d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
       />
     </svg>
+  );
+}
+
+function CollapseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function ExpandIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+      />
+    </svg>
+  );
+}
+
+function FolderIcon({ className, isOpen }: { className?: string; isOpen: boolean }) {
+  if (isOpen) {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+      />
+    </svg>
+  );
+}
+
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className, isOpen }: { className?: string; isOpen: boolean }) {
+  return (
+    <svg
+      className={`${className} transition-transform ${isOpen ? "rotate-90" : ""}`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function hasChangedChildren(node: FileTreeNode): boolean {
+  if (node.status) return true;
+  if (node.children) {
+    return node.children.some(hasChangedChildren);
+  }
+  return false;
+}
+
+function FileTree({
+  nodes,
+  expandedFolders,
+  selectedPath,
+  showChangedOnly,
+  onToggle,
+  onSelect,
+  depth = 0,
+}: {
+  nodes: FileTreeNode[];
+  expandedFolders: Set<string>;
+  selectedPath: string;
+  showChangedOnly: boolean;
+  onToggle: (path: string) => void;
+  onSelect: (node: FileTreeNode) => void;
+  depth?: number;
+}) {
+  const filteredNodes = showChangedOnly ? nodes.filter(hasChangedChildren) : nodes;
+
+  return (
+    <>
+      {filteredNodes.map((node) => (
+        <FileTreeItem
+          key={node.path}
+          node={node}
+          depth={depth}
+          isExpanded={expandedFolders.has(node.path)}
+          isSelected={selectedPath === node.path}
+          expandedFolders={expandedFolders}
+          selectedPath={selectedPath}
+          showChangedOnly={showChangedOnly}
+          onToggle={onToggle}
+          onSelect={onSelect}
+        />
+      ))}
+    </>
+  );
+}
+
+function FileTreeItem({
+  node,
+  depth,
+  isExpanded,
+  isSelected,
+  expandedFolders,
+  selectedPath,
+  showChangedOnly,
+  onToggle,
+  onSelect,
+}: {
+  node: FileTreeNode;
+  depth: number;
+  isExpanded: boolean;
+  isSelected: boolean;
+  expandedFolders: Set<string>;
+  selectedPath: string;
+  showChangedOnly: boolean;
+  onToggle: (path: string) => void;
+  onSelect: (node: FileTreeNode) => void;
+}) {
+  const isFolder = node.type === "folder";
+  const hasChange = node.status;
+  const fileChange = mockFileChanges.find((f) => f.path === node.path);
+
+  const statusColorMap = {
+    added: "text-green-500",
+    modified: "text-amber-500",
+    deleted: "text-red-500",
+  };
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => {
+          if (isFolder) {
+            onToggle(node.path);
+          } else {
+            onSelect(node);
+          }
+        }}
+        className={`w-full flex items-center gap-1 px-2 py-1 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
+          isSelected ? "bg-blue-100 dark:bg-blue-900/50" : ""
+        }`}
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+      >
+        {isFolder ? (
+          <>
+            <ChevronIcon className="w-3 h-3 text-gray-400 shrink-0" isOpen={isExpanded} />
+            <FolderIcon
+              className={`w-4 h-4 shrink-0 ${hasChange ? statusColorMap[hasChange] : "text-amber-400"}`}
+              isOpen={isExpanded}
+            />
+          </>
+        ) : (
+          <>
+            <span className="w-3" />
+            <FileIcon
+              className={`w-4 h-4 shrink-0 ${hasChange ? statusColorMap[hasChange] : "text-gray-400"}`}
+            />
+          </>
+        )}
+        <span
+          className={`truncate font-mono text-xs ${
+            isSelected
+              ? "text-blue-700 dark:text-blue-300"
+              : hasChange
+                ? statusColorMap[hasChange]
+                : "text-gray-700 dark:text-gray-300"
+          }`}
+        >
+          {node.name}
+        </span>
+        {hasChange && (
+          <span
+            className={`ml-auto text-xs ${
+              hasChange === "added" ? "text-green-500" : hasChange === "deleted" ? "text-red-500" : "text-amber-500"
+            }`}
+          >
+            {hasChange === "added" ? "A" : hasChange === "deleted" ? "D" : "M"}
+          </span>
+        )}
+        {fileChange && (
+          <span className="ml-1 text-xs text-gray-400">
+            +{fileChange.additions} -{fileChange.deletions}
+          </span>
+        )}
+      </button>
+      {isFolder && isExpanded && node.children && (
+        <FileTree
+          nodes={node.children}
+          expandedFolders={expandedFolders}
+          selectedPath={selectedPath}
+          showChangedOnly={showChangedOnly}
+          onToggle={onToggle}
+          onSelect={onSelect}
+          depth={depth + 1}
+        />
+      )}
+    </div>
   );
 }
