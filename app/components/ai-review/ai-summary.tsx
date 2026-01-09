@@ -32,7 +32,9 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
             <SparklesIcon className="w-5 h-5 text-violet-500" />
             <h2 className="font-semibold text-gray-900 dark:text-white">AI分析サマリー</h2>
           </div>
-          <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${riskColors[summary.riskLevel]}`}>
+          <span
+            className={`px-2.5 py-1 text-xs font-medium rounded-full ${riskColors[summary.riskLevel]}`}
+          >
             {riskLabels[summary.riskLevel]}
           </span>
         </div>
@@ -40,7 +42,9 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
 
       <div className="p-4 space-y-4">
         <div>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{summary.overview}</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            {summary.overview}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,8 +53,11 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
               構造の変更
             </h3>
             <ul className="space-y-1">
-              {summary.structureChanges.map((change, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+              {summary.structureChanges.map((change) => (
+                <li
+                  key={change}
+                  className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
+                >
                   <span className="text-violet-500 mt-0.5">•</span>
                   {change}
                 </li>
@@ -63,9 +70,9 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
               影響範囲
             </h3>
             <div className="flex flex-wrap gap-1.5">
-              {summary.impactedAreas.map((area, i) => (
+              {summary.impactedAreas.map((area) => (
                 <span
-                  key={i}
+                  key={area}
                   className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md font-mono"
                 >
                   {area}
@@ -81,9 +88,9 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
               規約チェック
             </h3>
             <div className="space-y-1.5">
-              {summary.conventionIssues.map((issue, i) => (
+              {summary.conventionIssues.map((issue) => (
                 <div
-                  key={i}
+                  key={`${issue.severity}-${issue.location}`}
                   className="flex items-center gap-2 text-sm p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50"
                 >
                   <span className={severityIcons[issue.severity]}>
@@ -114,8 +121,11 @@ export function AISummaryPanel({ summary, onAskMore }: AISummaryPanelProps) {
               テスト提案
             </h3>
             <ul className="space-y-1">
-              {summary.testSuggestions.map((test, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+              {summary.testSuggestions.map((test) => (
+                <li
+                  key={test}
+                  className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
+                >
                   <CheckIcon className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                   {test}
                 </li>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Position = {
   x: number;
@@ -13,20 +13,41 @@ type CodeContextMenuProps = {
 };
 
 const quickActions = [
-  { id: "explain", label: "このコードを説明して", icon: "📖", description: "選択したコードの動作を説明" },
-  { id: "edge-cases", label: "エッジケースを見つけて", icon: "🔍", description: "潜在的な問題を検出" },
-  { id: "test-cases", label: "テストケースを生成", icon: "🧪", description: "ユニットテストを提案" },
+  {
+    id: "explain",
+    label: "このコードを説明して",
+    icon: "📖",
+    description: "選択したコードの動作を説明",
+  },
+  {
+    id: "edge-cases",
+    label: "エッジケースを見つけて",
+    icon: "🔍",
+    description: "潜在的な問題を検出",
+  },
+  {
+    id: "test-cases",
+    label: "テストケースを生成",
+    icon: "🧪",
+    description: "ユニットテストを提案",
+  },
   { id: "improve", label: "より良い書き方は?", icon: "✨", description: "リファクタリング提案" },
   { id: "behavior", label: "動作を確認", icon: "▶️", description: "特定の入力での動作を確認" },
   { id: "types", label: "型を確認", icon: "📐", description: "型の定義と使用を確認" },
 ];
 
-export function CodeContextMenu({ selectedCode, position, onClose, onAction }: CodeContextMenuProps) {
+export function CodeContextMenu({
+  selectedCode,
+  position,
+  onClose,
+  onAction,
+}: CodeContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target;
+      if (menuRef.current && target instanceof Node && !menuRef.current.contains(target)) {
         onClose();
       }
     };
@@ -99,13 +120,7 @@ export function CodeContextMenu({ selectedCode, position, onClose, onAction }: C
   );
 }
 
-export function BehaviorTestPanel({
-  code,
-  onClose,
-}: {
-  code: string;
-  onClose: () => void;
-}) {
+export function BehaviorTestPanel({ code, onClose }: { code: string; onClose: () => void }) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,19 +157,23 @@ export function BehaviorTestPanel({
 
         <div className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               対象コード
-            </label>
+            </div>
             <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
               <pre className="text-xs text-gray-300 font-mono">{code}</pre>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="test-input"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               テスト入力
             </label>
             <input
+              id="test-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -230,13 +249,7 @@ export function BehaviorTestPanel({
   );
 }
 
-export function CodeExplainPanel({
-  code,
-  onClose,
-}: {
-  code: string;
-  onClose: () => void;
-}) {
+export function CodeExplainPanel({ code, onClose }: { code: string; onClose: () => void }) {
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -288,9 +301,9 @@ export function CodeExplainPanel({
 
         <div className="p-4 overflow-y-auto flex-1">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               対象コード
-            </label>
+            </div>
             <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
               <pre className="text-xs text-gray-300 font-mono">{code}</pre>
             </div>

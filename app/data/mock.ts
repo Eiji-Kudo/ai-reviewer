@@ -237,8 +237,18 @@ export const mockFileTree: FileTreeNode[] = [
             type: "folder",
             path: "src/components/Auth",
             children: [
-              { name: "Login.tsx", type: "file", path: "src/components/Auth/Login.tsx", status: "added" },
-              { name: "Logout.tsx", type: "file", path: "src/components/Auth/Logout.tsx", status: "added" },
+              {
+                name: "Login.tsx",
+                type: "file",
+                path: "src/components/Auth/Login.tsx",
+                status: "added",
+              },
+              {
+                name: "Logout.tsx",
+                type: "file",
+                path: "src/components/Auth/Logout.tsx",
+                status: "added",
+              },
               { name: "index.ts", type: "file", path: "src/components/Auth/index.ts" },
             ],
           },
@@ -269,7 +279,12 @@ export const mockFileTree: FileTreeNode[] = [
         type: "folder",
         path: "src/contexts",
         children: [
-          { name: "AuthContext.tsx", type: "file", path: "src/contexts/AuthContext.tsx", status: "added" },
+          {
+            name: "AuthContext.tsx",
+            type: "file",
+            path: "src/contexts/AuthContext.tsx",
+            status: "added",
+          },
           { name: "ThemeContext.tsx", type: "file", path: "src/contexts/ThemeContext.tsx" },
         ],
       },
@@ -325,9 +340,11 @@ export const mockLineSuggestions: LineSuggestion[] = [
     suggestedComment: {
       gentle: "navigateがimportされてないみたい、useNavigate使う感じかな？",
       neutral: "navigate関数が未定義です。react-routerからuseNavigateをインポートしてください。",
-      strict: "[ERROR] 未定義関数の呼び出し。useNavigateフックをインポートし、コンポーネント内で呼び出してください。",
+      strict:
+        "[ERROR] 未定義関数の呼び出し。useNavigateフックをインポートし、コンポーネント内で呼び出してください。",
     },
-    suggestedCode: "import { useNavigate } from 'react-router';\n// ...\nconst navigate = useNavigate();",
+    suggestedCode:
+      "import { useNavigate } from 'react-router';\n// ...\nconst navigate = useNavigate();",
   },
 ];
 
@@ -469,7 +486,8 @@ export const mockAIIssues: AIIssue[] = [
       code: `useEffect(() => {
   fetchUser(userId);
 }, [userId]);`,
-      explanation: "userIdを依存配列に追加することで、userIdが変更された際に副作用が再実行されます。",
+      explanation:
+        "userIdを依存配列に追加することで、userIdが変更された際に副作用が再実行されます。",
     },
     relatedSymbols: [
       { name: "fetchUser", location: "useAuth.ts:23", type: "definition" },

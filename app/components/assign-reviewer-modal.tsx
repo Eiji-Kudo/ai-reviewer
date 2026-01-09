@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { mockTeamMembers, type TeamMember } from "~/data/mock";
+import { mockTeamMembers } from "~/data/mock";
 
 type AssignReviewerModalProps = {
   isOpen: boolean;
@@ -83,7 +83,9 @@ export function AssignReviewerModal({
           ) : (
             <div className="space-y-1">
               {filteredMembers.map((member) => {
-                const isSelected = selectedMembers.includes(member.name.toLowerCase().split(" ")[0]);
+                const isSelected = selectedMembers.includes(
+                  member.name.toLowerCase().split(" ")[0]
+                );
                 const memberKey = member.name.toLowerCase().split(" ")[0];
 
                 return (

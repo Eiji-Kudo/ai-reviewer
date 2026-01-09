@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { MemberAvatar } from "~/components/assign-reviewer-modal";
-import { mockReviews, mockTeamMembers, type Review, type ReviewStatus, statusLabels } from "~/data/mock";
+import {
+  mockReviews,
+  mockTeamMembers,
+  type Review,
+  type ReviewStatus,
+  statusLabels,
+} from "~/data/mock";
 
 export function meta() {
   return [
@@ -113,19 +119,12 @@ export default function Board() {
                 }`}
               >
                 <FilterIcon className="w-4 h-4" />
-                {assigneeFilter ? (
-                  <span className="capitalize">{assigneeFilter}</span>
-                ) : (
-                  "Assignee"
-                )}
+                {assigneeFilter ? <span className="capitalize">{assigneeFilter}</span> : "Assignee"}
                 <ChevronDownIcon className="w-3 h-3" />
               </button>
               {isFilterOpen && (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsFilterOpen(false)}
-                  />
+                  <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)} />
                   <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 z-20 py-2 animate-scale-in">
                     <button
                       type="button"
@@ -134,12 +133,24 @@ export default function Board() {
                         setIsFilterOpen(false);
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                        assigneeFilter === null ? "text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"
+                        assigneeFilter === null
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                       </span>
                       <span>All Assignees</span>
@@ -157,12 +168,16 @@ export default function Board() {
                             setIsFilterOpen(false);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                            assigneeFilter === memberKey ? "text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"
+                            assigneeFilter === memberKey
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           <MemberAvatar name={member.name} size="sm" />
                           <span>{member.name}</span>
-                          {assigneeFilter === memberKey && <CheckmarkIcon className="w-4 h-4 ml-auto" />}
+                          {assigneeFilter === memberKey && (
+                            <CheckmarkIcon className="w-4 h-4 ml-auto" />
+                          )}
                         </button>
                       );
                     })}
@@ -208,7 +223,10 @@ export default function Board() {
                       {columnReviews.length}
                     </span>
                   </div>
-                  <button className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <button
+                    type="button"
+                    className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
                     <MoreIcon className="w-4 h-4" />
                   </button>
                 </div>

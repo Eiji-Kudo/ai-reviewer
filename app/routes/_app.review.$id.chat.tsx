@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "react-router";
 import { mockCodeDiff, mockReviews } from "~/data/mock";
 
@@ -40,10 +40,6 @@ Feel free to ask me any questions about the code!`,
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -59,6 +55,7 @@ Feel free to ask me any questions about the code!`,
     setInput("");
     setSelectedCode(null);
     setIsLoading(true);
+    requestAnimationFrame(scrollToBottom);
 
     setTimeout(() => {
       const aiResponse: Message = {
@@ -68,6 +65,7 @@ Feel free to ask me any questions about the code!`,
       };
       setMessages((prev) => [...prev, aiResponse]);
       setIsLoading(false);
+      requestAnimationFrame(scrollToBottom);
     }, 1000);
   };
 
@@ -130,6 +128,7 @@ Feel free to ask me any questions about the code!`,
           <div className="flex flex-wrap gap-2 mb-3">
             {quickActions.map((action) => (
               <button
+                type="button"
                 key={action.label}
                 onClick={() => setInput(action.prompt)}
                 className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -146,6 +145,7 @@ Feel free to ask me any questions about the code!`,
                   Selected code context
                 </span>
                 <button
+                  type="button"
                   onClick={() => setSelectedCode(null)}
                   className="text-xs text-red-500 hover:text-red-600"
                 >
@@ -188,13 +188,13 @@ Feel free to ask me any questions about the code!`,
             <span className="text-xs font-mono text-gray-500 dark:text-gray-400">src/App.tsx</span>
           </div>
           <div className="p-3 font-mono text-xs overflow-x-auto">
-            {mockCodeDiff.split("\n").map((line, i) => (
+            {mockCodeDiff.split("\n").map((line, lineIndex) => (
               <div
-                key={i}
+                key={`${lineIndex}-${line.slice(0, 20)}`}
                 onClick={() => {
                   const selectedLines = mockCodeDiff
                     .split("\n")
-                    .slice(Math.max(0, i - 2), i + 3)
+                    .slice(Math.max(0, lineIndex - 2), lineIndex + 3)
                     .join("\n");
                   setSelectedCode(selectedLines);
                 }}

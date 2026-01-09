@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useParams } from "react-router";
-import { AssignReviewerModal, MemberAvatar } from "~/components/assign-reviewer-modal";
-import { AISummaryPanel } from "~/components/ai-review/ai-summary";
 import { AIIssueCard } from "~/components/ai-review/ai-issue-card";
+import { AISummaryPanel } from "~/components/ai-review/ai-summary";
 import { CommentComposer } from "~/components/ai-review/comment-composer";
+import { AssignReviewerModal, MemberAvatar } from "~/components/assign-reviewer-modal";
 import {
+  type AIIssue,
+  mockAIIssues,
+  mockAISummary,
   mockComments,
   mockFileChanges,
   mockReviews,
-  mockAISummary,
-  mockAIIssues,
   statusLabels,
-  type AIIssue,
 } from "~/data/mock";
 
 export function meta() {
@@ -127,8 +127,10 @@ export default function ReviewDetail() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="btn-secondary text-sm">Request Changes</button>
-              <button className="btn-primary text-sm flex items-center gap-2">
+              <button type="button" className="btn-secondary text-sm">
+                Request Changes
+              </button>
+              <button type="button" className="btn-primary text-sm flex items-center gap-2">
                 <CheckIcon />
                 Approve
               </button>
@@ -196,7 +198,7 @@ function ReviewOverview({ review }: { review: (typeof mockReviews)[0] }) {
     setCommentIssue(issue);
   };
 
-  const handleJumpToCode = (filePath: string, line: number) => {
+  const handleJumpToCode = (_filePath: string, _line: number) => {
     window.location.href = `/review/${review.id}/files`;
   };
 
@@ -205,7 +207,9 @@ function ReviewOverview({ review }: { review: (typeof mockReviews)[0] }) {
       {review.aiAnalyzed && (
         <AISummaryPanel
           summary={mockAISummary}
-          onAskMore={() => (window.location.href = `/review/${review.id}/chat`)}
+          onAskMore={() => {
+            window.location.href = `/review/${review.id}/chat`;
+          }}
         />
       )}
 
@@ -250,148 +254,152 @@ function ReviewOverview({ review }: { review: (typeof mockReviews)[0] }) {
               <FilesIcon />
               Files Changed
             </h2>
-          <div className="space-y-1">
-            {mockFileChanges.map((file) => (
-              <Link
-                key={file.path}
-                to={`/review/${review.id}/files`}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileStatusIcon status={file.status} />
-                  <span className="text-sm font-mono text-gray-700 dark:text-gray-300 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {file.path}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-mono">
-                  <span className="text-emerald-600 dark:text-emerald-400">+{file.additions}</span>
-                  <span className="text-red-500 dark:text-red-400">-{file.deletions}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {unresolvedComments.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <CommentIcon />
-              Unresolved Comments
-              <span className="badge badge-orange">{unresolvedComments.length}</span>
-            </h2>
-            <div className="space-y-4">
-              {unresolvedComments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/50"
+            <div className="space-y-1">
+              {mockFileChanges.map((file) => (
+                <Link
+                  key={file.path}
+                  to={`/review/${review.id}/files`}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-medium">
-                      {comment.author[0].toUpperCase()}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {comment.author}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                      {comment.filePath}:{comment.lineNumber}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileStatusIcon status={file.status} />
+                    <span className="text-sm font-mono text-gray-700 dark:text-gray-300 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {file.path}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 pl-10">
-                    {comment.content}
-                  </p>
-                </div>
+                  <div className="flex items-center gap-3 text-xs font-mono">
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      +{file.additions}
+                    </span>
+                    <span className="text-red-500 dark:text-red-400">-{file.deletions}</span>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
-        )}
-      </div>
 
-      <div className="space-y-6">
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Reviewers</h2>
-            <button
-              type="button"
-              onClick={() => setIsAssignModalOpen(true)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <EditIcon />
-            </button>
-          </div>
-          <div className="space-y-3">
-            {reviewers.length > 0 ? (
-              reviewers.map((reviewer) => (
-                <div key={reviewer} className="flex items-center gap-3">
-                  <MemberAvatar name={reviewer} />
-                  <span className="text-sm text-gray-900 dark:text-white capitalize">{reviewer}</span>
-                </div>
-              ))
-            ) : (
+          {unresolvedComments.length > 0 && (
+            <div className="card p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <CommentIcon />
+                Unresolved Comments
+                <span className="badge badge-orange">{unresolvedComments.length}</span>
+              </h2>
+              <div className="space-y-4">
+                {unresolvedComments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/50"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-medium">
+                        {comment.author[0].toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {comment.author}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                        {comment.filePath}:{comment.lineNumber}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 pl-10">
+                      {comment.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Reviewers</h2>
               <button
                 type="button"
                 onClick={() => setIsAssignModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                <PlusIcon />
-                <span className="text-sm">Assign reviewers</span>
+                <EditIcon />
               </button>
-            )}
-          </div>
-        </div>
-
-        <AssignReviewerModal
-          isOpen={isAssignModalOpen}
-          onClose={() => setIsAssignModalOpen(false)}
-          currentReviewers={reviewers}
-          onAssign={setReviewers}
-          reviewTitle={review.title}
-        />
-
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Labels</h2>
-          <div className="flex flex-wrap gap-2">
-            {review.labels.map((label) => (
-              <span
-                key={label}
-                className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-lg"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {review.aiAnalyzed && (
-          <div className="card-elevated p-6 bg-gradient-to-br from-violet-50 to-blue-50 dark:from-violet-900/30 dark:to-blue-900/30 border-violet-200 dark:border-violet-800/50">
-            <div className="flex items-center gap-2 mb-3">
-              <AIIcon />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Analysis</h2>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This review has been analyzed by AI. Get detailed insights and suggestions.
-            </p>
-            <Link
-              to={`/review/${review.id}/chat`}
-              className="inline-flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium group"
-            >
-              View AI insights
-              <svg
-                className="w-4 h-4 transition-transform group-hover:translate-x-0.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
+            <div className="space-y-3">
+              {reviewers.length > 0 ? (
+                reviewers.map((reviewer) => (
+                  <div key={reviewer} className="flex items-center gap-3">
+                    <MemberAvatar name={reviewer} />
+                    <span className="text-sm text-gray-900 dark:text-white capitalize">
+                      {reviewer}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAssignModalOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                >
+                  <PlusIcon />
+                  <span className="text-sm">Assign reviewers</span>
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          <AssignReviewerModal
+            isOpen={isAssignModalOpen}
+            onClose={() => setIsAssignModalOpen(false)}
+            currentReviewers={reviewers}
+            onAssign={setReviewers}
+            reviewTitle={review.title}
+          />
+
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Labels</h2>
+            <div className="flex flex-wrap gap-2">
+              {review.labels.map((label) => (
+                <span
+                  key={label}
+                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-lg"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {review.aiAnalyzed && (
+            <div className="card-elevated p-6 bg-gradient-to-br from-violet-50 to-blue-50 dark:from-violet-900/30 dark:to-blue-900/30 border-violet-200 dark:border-violet-800/50">
+              <div className="flex items-center gap-2 mb-3">
+                <AIIcon />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Analysis</h2>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                This review has been analyzed by AI. Get detailed insights and suggestions.
+              </p>
+              <Link
+                to={`/review/${review.id}/chat`}
+                className="inline-flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium group"
+              >
+                View AI insights
+                <svg
+                  className="w-4 h-4 transition-transform group-hover:translate-x-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

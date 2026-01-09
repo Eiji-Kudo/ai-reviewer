@@ -1,19 +1,18 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "react-router";
-import { AIChatPanel } from "~/components/ai-review/ai-chat-panel";
+import { AIReviewAssistant } from "~/components/ai-review/ai-review-assistant";
 import {
-  CodeContextMenu,
   BehaviorTestPanel,
+  CodeContextMenu,
   CodeExplainPanel,
 } from "~/components/ai-review/code-context-menu";
 import {
-  mockFullFileContent,
-  mockLineSuggestions,
-  mockComments,
+  type FileTreeNode,
+  type LineSuggestion,
   mockFileChanges,
   mockFileTree,
-  type LineSuggestion,
-  type FileTreeNode,
+  mockFullFileContent,
+  mockLineSuggestions,
 } from "~/data/mock";
 
 type ContextMenuState = {
@@ -24,7 +23,10 @@ type ContextMenuState = {
 
 type Tone = "gentle" | "neutral" | "strict";
 
-function getDefaultExpandedFolders(nodes: FileTreeNode[], result: Set<string> = new Set()): Set<string> {
+function getDefaultExpandedFolders(
+  nodes: FileTreeNode[],
+  result: Set<string> = new Set()
+): Set<string> {
   for (const node of nodes) {
     if (node.type === "folder" && node.children) {
       const hasChangedFile = node.children.some(
@@ -40,10 +42,9 @@ function getDefaultExpandedFolders(nodes: FileTreeNode[], result: Set<string> = 
 }
 
 export default function ReviewFiles() {
-  const { id } = useParams();
+  const { id: _reviewId } = useParams();
   const [selectedFile, setSelectedFile] = useState(mockFileChanges[0]);
   const [showAIPanel, setShowAIPanel] = useState(true);
-  const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     isOpen: false,
     code: "",
@@ -53,20 +54,25 @@ export default function ReviewFiles() {
   const [showExplain, setShowExplain] = useState(false);
   const [activeCode, setActiveCode] = useState("");
   const [postedComments, setPostedComments] = useState<number[]>([]);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    () => getDefaultExpandedFolders(mockFileTree)
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() =>
+    getDefaultExpandedFolders(mockFileTree)
   );
   const [showChangedOnly, setShowChangedOnly] = useState(true);
+  const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
+  const codeViewRef = useRef<HTMLDivElement>(null);
 
-  const fileComments = mockComments.filter(
-    (c) => c.reviewId === id && c.filePath === selectedFile.path
-  );
-
-  const handleJumpToCode = (filePath: string, line: number) => {
-    const file = mockFileChanges.find((f) => f.path.includes(filePath.split("/").pop() || ""));
-    if (file) {
-      setSelectedFile(file);
+  const handleJumpToLine = (lineNumber: number) => {
+    setHighlightedLine(lineNumber);
+    const lineElement = document.getElementById(`line-${lineNumber}`);
+    if (lineElement && codeViewRef.current) {
+      lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setHighlightedLine(null), 2000);
     }
+  };
+
+  const handlePostCommentFromAssistant = (lineNumber: number, _comment: string) => {
+    setPostedComments((prev) => [...prev, lineNumber]);
+    handleJumpToLine(lineNumber);
   };
 
   const handleCodeSelection = (code: string, event: React.MouseEvent) => {
@@ -76,7 +82,6 @@ export default function ReviewFiles() {
         code,
         position: { x: event.clientX, y: event.clientY },
       });
-      setSelectedCode(code);
     }
   };
 
@@ -90,7 +95,6 @@ export default function ReviewFiles() {
         setShowExplain(true);
         break;
       default:
-        setSelectedCode(`${action}: ${code}`);
         break;
     }
   };
@@ -187,7 +191,9 @@ export default function ReviewFiles() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-gray-900 dark:text-white">{selectedFile.path}</span>
+            <span className="font-mono text-sm text-gray-900 dark:text-white">
+              {selectedFile.path}
+            </span>
             <span
               className={`px-2 py-0.5 text-xs rounded ${
                 selectedFile.status === "added"
@@ -223,11 +229,15 @@ export default function ReviewFiles() {
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className={`${showAIPanel ? "flex-1" : "w-full"} overflow-auto bg-white dark:bg-gray-950`}>
+          <div
+            ref={codeViewRef}
+            className={`${showAIPanel ? "flex-1" : "w-full"} overflow-auto bg-white dark:bg-gray-950`}
+          >
             <FullFileView
               content={mockFullFileContent}
               suggestions={mockLineSuggestions}
               postedComments={postedComments}
+              highlightedLine={highlightedLine}
               onSelectCode={handleCodeSelection}
               onPostComment={handlePostComment}
             />
@@ -235,9 +245,10 @@ export default function ReviewFiles() {
 
           {showAIPanel && (
             <div className="w-96 shrink-0">
-              <AIChatPanel
-                initialContext={selectedCode || selectedFile.path}
-                onJumpToCode={handleJumpToCode}
+              <AIReviewAssistant
+                concerns={[]}
+                onPostComment={handlePostCommentFromAssistant}
+                onJumpToLine={handleJumpToLine}
               />
             </div>
           )}
@@ -257,9 +268,7 @@ export default function ReviewFiles() {
         <BehaviorTestPanel code={activeCode} onClose={() => setShowBehaviorTest(false)} />
       )}
 
-      {showExplain && (
-        <CodeExplainPanel code={activeCode} onClose={() => setShowExplain(false)} />
-      )}
+      {showExplain && <CodeExplainPanel code={activeCode} onClose={() => setShowExplain(false)} />}
     </div>
   );
 }
@@ -268,12 +277,14 @@ function FullFileView({
   content,
   suggestions,
   postedComments,
+  highlightedLine,
   onSelectCode,
   onPostComment,
 }: {
   content: string;
   suggestions: LineSuggestion[];
   postedComments: number[];
+  highlightedLine: number | null;
   onSelectCode: (code: string, event: React.MouseEvent) => void;
   onPostComment: (lineNumber: number) => void;
 }) {
@@ -281,7 +292,7 @@ function FullFileView({
 
   const handleTextSelection = (event: React.MouseEvent) => {
     const selection = window.getSelection();
-    if (selection && selection.toString().trim()) {
+    if (selection?.toString().trim()) {
       onSelectCode(selection.toString(), event);
     }
   };
@@ -292,10 +303,17 @@ function FullFileView({
         const lineNumber = index + 1;
         const suggestion = suggestions.find((s) => s.lineNumber === lineNumber);
         const isPosted = postedComments.includes(lineNumber);
+        const isHighlighted = highlightedLine === lineNumber;
 
         return (
-          <div key={index}>
-            <div className="group flex hover:bg-gray-50 dark:hover:bg-gray-900/50">
+          <div key={`line-${lineNumber}`} id={`line-${lineNumber}`}>
+            <div
+              className={`group flex transition-colors ${
+                isHighlighted
+                  ? "bg-violet-100 dark:bg-violet-900/30 ring-2 ring-violet-500"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-900/50"
+              }`}
+            >
               <div className="w-12 flex-shrink-0 px-2 py-0.5 text-right text-gray-400 dark:text-gray-600 select-none border-r border-gray-200 dark:border-gray-800">
                 {lineNumber}
               </div>
@@ -327,10 +345,7 @@ function FullFileView({
             </div>
 
             {suggestion && !isPosted && (
-              <InlineSuggestion
-                suggestion={suggestion}
-                onPost={() => onPostComment(lineNumber)}
-              />
+              <InlineSuggestion suggestion={suggestion} onPost={() => onPostComment(lineNumber)} />
             )}
 
             {isPosted && suggestion && (
@@ -391,7 +406,9 @@ function InlineSuggestion({
   const config = typeConfig[suggestion.type];
 
   return (
-    <div className={`ml-12 mr-4 my-2 rounded-lg border-l-4 ${config.border} ${config.bg} overflow-hidden`}>
+    <div
+      className={`ml-12 mr-4 my-2 rounded-lg border-l-4 ${config.border} ${config.bg} overflow-hidden`}
+    >
       <div className="p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2 flex-1">
@@ -529,33 +546,6 @@ function ToneButton({
     >
       {label}
     </button>
-  );
-}
-
-function FileStatusIcon({ status }: { status: "added" | "modified" | "deleted" }) {
-  if (status === "added") {
-    return (
-      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    );
-  }
-  if (status === "deleted") {
-    return (
-      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-      </svg>
-    );
-  }
-  return (
-    <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-      />
-    </svg>
   );
 }
 
@@ -827,7 +817,11 @@ function FileTreeItem({
         {hasChange && (
           <span
             className={`ml-auto text-xs ${
-              hasChange === "added" ? "text-green-500" : hasChange === "deleted" ? "text-red-500" : "text-amber-500"
+              hasChange === "added"
+                ? "text-green-500"
+                : hasChange === "deleted"
+                  ? "text-red-500"
+                  : "text-amber-500"
             }`}
           >
             {hasChange === "added" ? "A" : hasChange === "deleted" ? "D" : "M"}

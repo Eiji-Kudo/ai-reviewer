@@ -54,7 +54,9 @@ export function AIIssueCard({ issue, onCreateComment, onJumpToCode }: AIIssueCar
   };
 
   return (
-    <div className={`rounded-xl border ${config.border} ${config.bg} overflow-hidden animate-fade-in`}>
+    <div
+      className={`rounded-xl border ${config.border} ${config.bg} overflow-hidden animate-fade-in`}
+    >
       <div className="p-4">
         <div className="flex items-start gap-3">
           <span className={`mt-0.5 ${config.icon}`}>
@@ -150,7 +152,9 @@ export function AIIssueCard({ issue, onCreateComment, onJumpToCode }: AIIssueCar
             <div className="bg-emerald-900/90 rounded-lg p-3 mb-2 overflow-x-auto">
               <pre className="text-xs text-emerald-300 font-mono">{issue.suggestion.code}</pre>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">{issue.suggestion.explanation}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {issue.suggestion.explanation}
+            </p>
           </div>
 
           {issue.relatedSymbols && issue.relatedSymbols.length > 0 && (
@@ -159,9 +163,9 @@ export function AIIssueCard({ issue, onCreateComment, onJumpToCode }: AIIssueCar
                 関連コード
               </h4>
               <div className="space-y-1">
-                {issue.relatedSymbols.map((symbol, i) => (
+                {issue.relatedSymbols.map((symbol) => (
                   <button
-                    key={i}
+                    key={`${symbol.name}-${symbol.location}`}
                     type="button"
                     onClick={() => {
                       const [file, line] = symbol.location.split(":");
@@ -170,9 +174,15 @@ export function AIIssueCard({ issue, onCreateComment, onJumpToCode }: AIIssueCar
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors text-left"
                   >
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {symbol.type === "definition" ? "定義" : symbol.type === "usage" ? "使用" : "型"}
+                      {symbol.type === "definition"
+                        ? "定義"
+                        : symbol.type === "usage"
+                          ? "使用"
+                          : "型"}
                     </span>
-                    <span className="text-sm font-mono text-gray-900 dark:text-white">{symbol.name}</span>
+                    <span className="text-sm font-mono text-gray-900 dark:text-white">
+                      {symbol.name}
+                    </span>
                     <span className="text-xs text-blue-600 dark:text-blue-400 font-mono ml-auto">
                       {symbol.location}
                     </span>

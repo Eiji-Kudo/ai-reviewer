@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useState } from "react";
 
 type Message = {
   id: string;
@@ -28,8 +28,7 @@ export function AIChatPanel({ initialContext, onJumpToCode }: AIChatPanelProps) 
     {
       id: "1",
       role: "assistant",
-      content:
-        "このPRについて質問があればどうぞ。コードを選択して質問することもできます。",
+      content: "このPRについて質問があればどうぞ。コードを選択して質問することもできます。",
     },
   ]);
   const [input, setInput] = useState("");
@@ -39,10 +38,6 @@ export function AIChatPanel({ initialContext, onJumpToCode }: AIChatPanelProps) 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSend = (content: string) => {
     if (!content.trim()) return;
@@ -56,6 +51,7 @@ export function AIChatPanel({ initialContext, onJumpToCode }: AIChatPanelProps) 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    requestAnimationFrame(scrollToBottom);
 
     setTimeout(() => {
       const aiResponse: Message = {
@@ -65,6 +61,7 @@ export function AIChatPanel({ initialContext, onJumpToCode }: AIChatPanelProps) 
       };
       setMessages((prev) => [...prev, aiResponse]);
       setIsLoading(false);
+      requestAnimationFrame(scrollToBottom);
     }, 1000);
   };
 

@@ -67,9 +67,9 @@ export function CommentComposer({ issue, onClose, onSubmit }: CommentComposerPro
 
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               トーン
-            </label>
+            </div>
             <div className="flex gap-2">
               <ToneButton
                 tone="gentle"
@@ -96,10 +96,14 @@ export function CommentComposer({ issue, onClose, onSubmit }: CommentComposerPro
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="comment-content"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               コメント内容
             </label>
             <textarea
+              id="comment-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
@@ -137,7 +141,9 @@ export function CommentComposer({ issue, onClose, onSubmit }: CommentComposerPro
               プレビュー
             </h4>
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{content}</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {content}
+              </p>
               {includeSuggestion && issue.suggestion && (
                 <div className="mt-2 bg-gray-900 rounded-lg p-3 overflow-x-auto">
                   <pre className="text-xs text-emerald-300 font-mono">{issue.suggestion.code}</pre>
